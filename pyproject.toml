@@ -1,0 +1,41 @@
+[tool.poetry]
+name = "ma8404"
+version = "0.0.1"
+description = "Environment for problems in MA8404 - Numerical solution of time dependent differential equations"
+authors = ["Martine Dyring Hansen <ma.dy.ha@online.no>"]
+readme = "README.md"
+# repository = ""
+
+[tool.poetry.group.dev.dependencies]
+ipykernel = "^6.25.1"
+
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"
+
+# Requirements
+[tool.poetry.dependencies]
+python = "=3.9.6"
+requests = "^2.26.0"
+black = {extras = ["jupyter"], version = "^23.9.1"}
+flake8 = "^6.1.0"
+isort = "^5.12.0"
+mypy = "^1.5.1"
+tqdm = "^4.66.1"
+tensorflow = "^2.13.0"
+pandas = "^2.0.3"
+numpy = "^1.25.2"
+matplotlib = "^3.7.2"
+torchvision = "^0.15.2"
+jupyter-contrib-nbextensions = "^0.7.0"
+jupyter = "^1.0.0"
+ipykernel = "^6.25.1"
+nbconvert = "^7.8.0"
+scipy = "^1.11.2"
+torch = "^2.0.1"
+
+[tool.black]
+line-length = 90
+
+[tool.isort]
+profile = "black"
