@@ -22,6 +22,9 @@ from sklearn.metrics import confusion_matrix
 import seaborn as sns
 from plotly.subplots import make_subplots
 
+# global variables
+import params as params
+
 
 def train_model(
     model,
@@ -284,9 +287,9 @@ def get_dataloader_from_numpy_dataset(
     )
 
 
-def generate_spiral_data(n_points, noise, degree=360):
+def generate_spiral_data(n_points, noise, degree):
     np.random.seed(42)
-    n = np.sqrt(np.random.rand(n_points, 1)) * degree * (2 * np.pi) / degree
+    n = np.sqrt(np.random.rand(n_points, 1)) * degree * (2 * np.pi) / 360
     d1x = -np.cos(n) * n + np.random.randn(n_points, 1) * noise
     d1y = np.sin(n) * n + np.random.randn(n_points, 1) * noise
     return (
@@ -295,12 +298,13 @@ def generate_spiral_data(n_points, noise, degree=360):
     )
 
 
-def generate_circle_data(n_points, noise):
+def generate_circle_data(n_points, noise, factor):
     # Create circles
     X, y = make_circles(
         n_samples=n_points,  # Make a large circle containing a smaller circle in 2d
         noise=noise,  # a little bit of noise to the dots
         random_state=42,
+        factor=factor,
     )  # keep random state so we get the same values
     return X, y
 
@@ -549,3 +553,175 @@ def preprocess_transformed_array(x_transformed_array, y_transformed_array):
     print("# samples - # hidden dimension - # hidden layers\n")
 
     return x_transformed_reduced, y_transformed_reduced
+
+
+def run_model(activation_functions, **kwargs):
+    # Unpack kwargs
+    ModelODE = kwargs.get("ModelODE", None)
+    input_dim = kwargs.get("input_dim", None)
+    hidden_dim = kwargs.get("hidden_dim", None)
+    hidden_internal_dim = kwargs.get("hidden_internal_dim", None)
+    output_dim = kwargs.get("output_dim", None)
+    num_hidden_layers = kwargs.get("num_hidden_layers", None)
+    variant = kwargs.get("variant", None)
+    method = kwargs.get("method", None)
+    model_lossfn = kwargs.get("model_lossfn", None)
+    model_optimizer = kwargs.get("model_optimizer", None)
+    train_dataloader = kwargs.get("train_dataloader", None)
+    test_dataloader = kwargs.get("test_dataloader", None)
+    X_train = kwargs.get("X_train", None)
+    y_train = kwargs.get("y_train", None)
+    X_test = kwargs.get("X_test", None)
+    y_test = kwargs.get("y_test", None)
+    n_epochs = kwargs.get("n_epochs", params.n_epochs)
+    color_label_dict = kwargs.get("color_label_dict", params.color_label_dict)
+
+    # Dict to store model objects
+    model_object_dict = {}
+
+    # Initialize plot for evaluation if we are comparing different actication function
+    if len(activation_functions) > 1:
+        fig = plt.figure(
+            constrained_layout=True, figsize=(15, 7 * len(activation_functions))
+        )
+        axs = fig.subfigures(len(activation_functions), 1)
+
+    for a, activation_function in enumerate(activation_functions):
+        print(f"\nActivation function {activation_function.__name__}:\n")
+
+        # Create 1x3 subplots on each row
+        if len(activation_functions) > 1:
+            subaxs = axs[a].subplots(1, 3)
+        else:
+            fig, subaxs = plt.subplots(1, 3, figsize=(15, 5))
+
+        # Initialize model
+        torch.manual_seed(42)  # set seed for random parameters in model
+        model = ModelODE(
+            input_dim=input_dim,
+            hidden_dim=hidden_dim,
+            hidden_internal_dim=hidden_internal_dim,
+            output_dim=output_dim,
+            num_hidden_layers=num_hidden_layers,  # num time steps
+            sigma=activation_function,
+            variant=variant,
+            method=method,
+        )
+
+        # Select optimizer and loss function
+        loss_fn = model_lossfn()
+        # Create an optimizer
+        optimizer = model_optimizer(params=model.parameters(), lr=0.1)
+
+        # Train and test for multiple epochs
+        train_loss_per_epoch = []
+        test_loss_per_epoch = []
+        train_acc_per_epoch = []
+        test_acc_per_epoch = []
+
+        for epoch in range(n_epochs):
+            print(f"----> EPOCH {epoch} of {n_epochs}:")
+            train_loss, train_acc = train_model(
+                model=model,
+                data_loader=train_dataloader,
+                loss_fn=loss_fn,
+                optimizer=optimizer,
+                verbose=False,
+            )
+
+            test_loss, test_acc = test_model(
+                model=model, data_loader=test_dataloader, loss_fn=loss_fn
+            )
+
+            train_loss_per_epoch.append(train_loss.detach().numpy())
+            train_acc_per_epoch.append(train_acc)
+
+            test_loss_per_epoch.append(test_loss.detach().numpy())
+            test_acc_per_epoch.append(test_acc)
+
+        # Plot decision boundaries for training and test sets
+        for i, (X_data, y_data, title) in enumerate(
+            zip(
+                [X_train.numpy(), X_test.numpy()],
+                [y_train.numpy(), y_test.numpy()],
+                ["Train", "Test"],
+            )
+        ):
+            xx, yy, y_grid_pred = decision_boundary_grid(model=model, X=X_data, y=y_data)
+            subaxs[i].contourf(xx, yy, y_grid_pred, cmap=plt.cm.RdYlBu, alpha=0.7)
+            subaxs[i].scatter(
+                X_data[:, 0], X_data[:, 1], c=y_data, s=40, cmap=plt.cm.RdYlBu
+            )
+            subaxs[i].set_xlim(xx.min(), xx.max())
+            subaxs[i].set_ylim(yy.min(), yy.max())
+            subaxs[i].set_title(title)
+
+        # Metrics
+        probs, x_transformed = model(X_test)
+        preds = torch.round(probs)
+        target = y_test.type(torch.int)
+        acc_metric = BinaryAccuracy()
+        prc_metric = BinaryPrecisionRecallCurve()
+
+        bprc = prc_metric(probs, target)  # Precision, recall, threshold
+        subaxs[2].plot(
+            bprc[0], bprc[1], label=f"AUC: {np.round(auc(bprc[1], bprc[0]), 3)}"
+        )  # auc(recall, precision)
+        subaxs[2].grid()
+        subaxs[2].set_xlabel("Precision")
+        subaxs[2].set_ylabel("Recall")
+        subaxs[2].legend()
+        subaxs[2].set_title("PR-curve")
+
+        # Confusion matrix
+        cm = confusion_matrix(target, preds.detach())
+
+        try:
+            axs[a].suptitle(
+                f"Activation function: {activation_function.__name__}\n"
+                f"w/ accuracy: {np.round(acc_metric(preds, target).item(), 3)}"
+            )
+        except NameError:
+            plt.suptitle(
+                f"Activation function: {activation_function.__name__}\n"
+                f"w/ accuracy: {np.round(acc_metric(preds, target).item(), 3)}"
+            )
+            plt.tight_layout()
+
+        # Test metrics
+        test_metrics, x_transformed_array, y_transformed_array = test_model(
+            model=model,
+            data_loader=test_dataloader,
+            loss_fn=loss_fn,
+            evaluate=True,  # get final result(evaluate=True)
+        )
+
+        # Transformation of data through time stepping
+        # Create reduced array
+        # 1. Remove dim due to batches
+        # 2. Transform form torch tensor to numpy array
+        x_transformed_reduced, y_transformed_reduced = preprocess_transformed_array(
+            x_transformed_array, y_transformed_array
+        )
+        # Color for reduced labels
+        color_transformed_reduced = np.vectorize(color_label_dict.get)(
+            y_transformed_reduced
+        )
+
+        # Save result as model privat varibles
+        model.test_metrics = test_metrics
+        model.x_transformed_array = x_transformed_array
+        model.y_transformed_array = y_transformed_array
+        model.x_transformed_reduced = x_transformed_reduced
+        model.y_transformed_reduced = y_transformed_reduced
+        model.color_transformed_reduced = color_transformed_reduced
+        model.train_loss_per_epoch = train_loss_per_epoch
+        model.test_loss_per_epoch = test_loss_per_epoch
+        model.train_acc_per_epoch = train_acc_per_epoch
+        model.test_acc_per_epoch = test_acc_per_epoch
+        model.confusion_matrix = cm
+
+        model_object_dict[activation_function.__name__] = model
+
+    plt.show()
+    return model_object_dict
