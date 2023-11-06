@@ -16,7 +16,7 @@ shallow_kwargs_1 = {
 
 # (Shallow) Euler UT m=p
 shallow_kwargs_2_1 = {
-    "name": "Shallow Euler UT ODE w/ m=p",
+    "name": "Shallow Euler UT ODE with m=p",
     "hidden_dim": 18,  # m_u
     "hidden_internal_dim": 18,  # p_u
     "num_hidden_layers": 3,  # l
@@ -26,7 +26,7 @@ shallow_kwargs_2_1 = {
 
 # (Shallow) Euler UT m≠p
 shallow_kwargs_2_2 = {
-    "name": "Shallow Euler UT ODE w/ m≠p",
+    "name": "Shallow Euler UT ODE with m≠p",
     "hidden_dim": 10,  # m_u
     "hidden_internal_dim": 32,  # p_u
     "num_hidden_layers": 3,  # l
@@ -46,7 +46,7 @@ shallow_kwargs_3 = {
 
 # (Shallow) RK4 UT m=p
 shallow_kwargs_4_1 = {
-    "name": "Shallow RK4 UT ODE w/ m=p",
+    "name": "Shallow RK4 UT ODE with m=p",
     "hidden_dim": 9,  # m_u
     "hidden_internal_dim": 9,  # p_u
     "num_hidden_layers": 3,  # l
@@ -56,7 +56,7 @@ shallow_kwargs_4_1 = {
 
 # (Shallow) RK4 UT m≠p
 shallow_kwargs_4_2 = {
-    "name": "Shallow RK4 UT ODE w/ m≠p",
+    "name": "Shallow RK4 UT ODE with m≠p",
     "hidden_dim": 10,  # m_u
     "hidden_internal_dim": 8,  # p_u
     "num_hidden_layers": 3,  # l
@@ -78,7 +78,7 @@ deep_kwargs_1 = {
 
 # (Deep) Euler UT m=p
 deep_kwargs_2_1 = {
-    "name": "Deep Euler UT ODE w/ m=p",
+    "name": "Deep Euler UT ODE with m=p",
     "hidden_dim": 8,  # m_u
     "hidden_internal_dim": 8,  # p_u
     "num_hidden_layers": 15,  # l
@@ -88,7 +88,7 @@ deep_kwargs_2_1 = {
 
 # (Deep) Euler UT m≠p
 deep_kwargs_2_2 = {
-    "name": "Deep Euler UT ODE w/ m≠p",
+    "name": "Deep Euler UT ODE with m≠p",
     "hidden_dim": 10,  # m_u
     "hidden_internal_dim": 6,  # p_u
     "num_hidden_layers": 15,  # l
@@ -108,7 +108,7 @@ deep_kwargs_3 = {
 
 # (Deep) RK4 UT m=p
 deep_kwargs_4_1 = {
-    "name": "Deep RK4 UT ODE w/ m=p",
+    "name": "Deep RK4 UT ODE with m=p",
     "hidden_dim": 4,  # m_u
     "hidden_internal_dim": 4,  # p_u
     "num_hidden_layers": 15,  # l
@@ -118,7 +118,7 @@ deep_kwargs_4_1 = {
 
 # (Deep) RK4 UT m≠p
 deep_kwargs_4_2 = {
-    "name": "Deep RK4 UT ODE w/ m≠p",
+    "name": "Deep RK4 UT ODE with m≠p",
     "hidden_dim": 8,  # m_u
     "hidden_internal_dim": 2,  # p_u
     "num_hidden_layers": 15,  # l

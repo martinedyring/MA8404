@@ -211,7 +211,14 @@ def decision_boundary_grid(model, X, y):
 
 
 def get_dataloader_from_numpy_dataset(
-    X, y, plot_splitting=False, color_label_dict=None, figsize=(15, 5)
+    X,
+    y,
+    color_label_dict=None,
+    fig_show=False,
+    fig_size=(15, 5),
+    fig_save=False,
+    fig_title="Train-test split",
+    fig_fname="dataset.png",
 ):
     X = torch.from_numpy(X).type(torch.float)
     y = torch.from_numpy(y).type(torch.float)
@@ -238,42 +245,39 @@ def get_dataloader_from_numpy_dataset(
         batch_size=400,
     )
 
-    if plot_splitting:
-        fig, axs = plt.subplots(1, 3, figsize=figsize)
+    fig, axs = plt.subplots(1, 3, figsize=fig_size)
 
-        if color_label_dict is not None:
-            color_dataset = np.vectorize(color_label_dict.get)(y)
-            color_train = np.vectorize(color_label_dict.get)(y_train)
-            color_test = np.vectorize(color_label_dict.get)(y_test)
-        else:
-            color_dataset = y
-            color_train = y_train
-            color_test = y_test
+    if color_label_dict is not None:
+        color_dataset = np.vectorize(color_label_dict.get)(y)
+        color_train = np.vectorize(color_label_dict.get)(y_train)
+        color_test = np.vectorize(color_label_dict.get)(y_test)
+    else:
+        color_dataset = y
+        color_train = y_train
+        color_test = y_test
 
-        # Plot total
-        axs[0].scatter(X[:, 0], X[:, 1], c=color_dataset)
-        axs[0].set_title("Total Synthetic dataset")
+    # Plot total
+    axs[0].scatter(X[:, 0], X[:, 1], c=color_dataset)
+    axs[0].set_title("Total Synthetic dataset")
 
-        # Plot train
-        scatter = axs[1].scatter(
-            X_train[:, 0], X_train[:, 1], c=color_train, label=y_train
-        )
-        legend0 = axs[1].legend(
-            *scatter.legend_elements(), loc="lower left", title="Classes"
-        )
-        axs[1].add_artist(legend0)
-        axs[1].set_title("Train dataset")
+    # Plot train
+    scatter = axs[1].scatter(X_train[:, 0], X_train[:, 1], c=color_train, label=y_train)
+    legend0 = axs[1].legend(*scatter.legend_elements(), loc="lower left", title="Classes")
+    axs[1].add_artist(legend0)
+    axs[1].set_title("Train dataset")
 
-        # Plot test
-        axs[2].scatter(X_test[:, 0], X_test[:, 1], c=color_test, label=y_test)
-        axs[2].set_title("Test dataset")
-        legend1 = axs[2].legend(
-            *scatter.legend_elements(), loc="lower left", title="Classes"
-        )
-        axs[2].add_artist(legend1)
+    # Plot test
+    axs[2].scatter(X_test[:, 0], X_test[:, 1], c=color_test, label=y_test)
+    axs[2].set_title("Test dataset")
+    legend1 = axs[2].legend(*scatter.legend_elements(), loc="lower left", title="Classes")
+    axs[2].add_artist(legend1)
 
-        plt.suptitle("Train-test split")
+    plt.suptitle(fig_title)
+    if fig_save:
+        plt.savefig(fig_fname)
+    if fig_show:
         plt.show()
+    plt.close(fig)
 
     return (
         train_dataloader,
@@ -310,7 +314,15 @@ def generate_circle_data(n_points, noise, factor):
 
 
 def plot_transformation_3d(
-    x_transformed_reduced, color_transformed_reduced, static=False, interactive=False
+    x_transformed_reduced,
+    color_transformed_reduced,
+    static=False,
+    interactive=False,
+    fig_show=False,
+    fig_size=(15, 5),
+    fig_save=False,
+    fig_title="Transform after each time step",
+    fig_fname="transform_3d.png",
 ):
     if static == False and interactive == False:
         raise ValueError(
@@ -322,7 +334,7 @@ def plot_transformation_3d(
     if static:
         # Initialize figure with 3D subplots (Matplotlib)
         plt_fig, axs = plt.subplots(
-            1, num_col, figsize=(15, 5), subplot_kw=dict(projection="3d")
+            1, num_col, figsize=fig_size, subplot_kw=dict(projection="3d")
         )
 
     if interactive:
@@ -382,13 +394,20 @@ def plot_transformation_3d(
             plotly_titels[f"Plot {l+1}"] = f"After {l_plot} time steps"
 
     if static:
-        plt.suptitle("Transform after each time step")
-        plt.show()
+        plt.suptitle(fig_title)
+        if fig_save:
+            plt.savefig(fig_fname)
+        if fig_show:
+            plt.show()
+        plt.close(plt_fig)
 
     if interactive:
         plotly_fig.for_each_annotation(lambda a: a.update(text=plotly_titels[a.text]))
-        plotly_fig.update_layout(title="Transformation of points")
-        plotly_fig.show()
+        plotly_fig.update_layout(title=fig_title)
+        if fig_save:
+            plotly_fig.write_html(fig_fname.split(".")[0] + ".html")
+        if fig_show:
+            plotly_fig.show()
 
 
 def plot_transformation_2d(
@@ -396,6 +415,11 @@ def plot_transformation_2d(
     color_transformed_reduced,
     show_decision_boundary=False,
     model=None,
+    fig_show=False,
+    fig_size=(15, 5),
+    fig_save=False,
+    fig_title="Transform after each time step",
+    fig_fname="transform_2d.png",
 ):
     if show_decision_boundary:
         if model is None:
@@ -411,7 +435,7 @@ def plot_transformation_2d(
 
     num_col = 3
 
-    fig, axs = plt.subplots(1, num_col, figsize=(15, 5))
+    fig, axs = plt.subplots(1, num_col, figsize=fig_size)
 
     for l in range(num_col):  # Hidden layers # Time step
         if l == num_col - 1:  # Always plot end
@@ -473,8 +497,12 @@ def plot_transformation_2d(
 
         # ------------------------------- background contourf plot ----------------------------
 
-    plt.suptitle("Transform after each time step")
-    plt.show()
+    plt.suptitle(fig_title)
+    if fig_save:
+        plt.savefig(fig_fname)
+    if fig_show:
+        plt.show()
+    plt.close(fig)
 
 
 def plot_evaluation_score(
@@ -483,9 +511,14 @@ def plot_evaluation_score(
     train_acc_per_epoch,
     test_acc_per_epoch,
     confusion_matrix,
+    fig_show=False,
+    fig_size=(15, 5),
+    fig_save=False,
+    fig_title="",
+    fig_fname="transform_2d.png",
 ):
     # Plot loss
-    fig, axs = plt.subplots(1, 3, figsize=(15, 5))
+    fig, axs = plt.subplots(1, 3, figsize=fig_size)
     axs[0].plot(train_loss_per_epoch, label="train")
     axs[0].plot(test_loss_per_epoch, label="validate")
     axs[0].set_xlabel("Epochs")
@@ -514,7 +547,12 @@ def plot_evaluation_score(
     axs[2].set_xlabel("Actual")
     axs[2].set_title("Confusion matrix on test dataset")
     plt.tight_layout()
-    plt.show()
+    plt.suptitle(fig_title)
+    if fig_save:
+        plt.savefig(fig_fname)
+    if fig_show:
+        plt.show()
+    plt.close(fig)
 
 
 def preprocess_transformed_array(x_transformed_array, y_transformed_array):
@@ -575,6 +613,9 @@ def run_model(activation_functions, **kwargs):
     y_test = kwargs.get("y_test", None)
     n_epochs = kwargs.get("n_epochs", params.n_epochs)
     color_label_dict = kwargs.get("color_label_dict", params.color_label_dict)
+    fig_save = kwargs.get("fig_save", False)
+    fig_show = kwargs.get("fig_show", False)
+    fig_fname = kwargs.get("fig_fname", "run_model.png")
 
     # Dict to store model objects
     model_object_dict = {}
@@ -723,5 +764,10 @@ def run_model(activation_functions, **kwargs):
 
         model_object_dict[activation_function.__name__] = model
 
-    plt.show()
+    if fig_save:
+        plt.savefig(fig_fname)
+    if fig_show:
+        plt.show()
+    plt.close(fig)
+
     return model_object_dict
