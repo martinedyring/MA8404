@@ -30,18 +30,17 @@ class ODEBlock(nn.Module):
             raise ValueError("Invalid variant type")
 
     def forward(self, y):
-        # y shape : batch size x m
+        # NOTE: Need to traspose since y.shape = batch size x m
 
         if self.variant == "standard":
-            Wy = torch.mm(self.W, y.T).T
-            b = torch.mul(torch.ones(y.shape[0], self.b.shape[0]), self.b)
-            return self.sigma(Wy + b)  # torch.mm : matrix multiplication
+            Wy = self.W @ y.T
+            Wyb = Wy.T + self.b
+            return Wyb
         elif self.variant == "UT":
-            Wy = torch.mm(self.W, y.T).T
-            b = torch.mul(torch.ones(y.shape[0], self.b.shape[0]), self.b)
-            # print(self.sigma(Wy + b).shape, self.U.shape)
-            # print(Wy, b)
-            return torch.mm(self.U.T, self.sigma(Wy + b).T).T
+            Wy = self.W @ y.T
+            Wyb = Wy.T + self.b
+            UWyb = self.U.T @ self.sigma(Wyb.T)
+            return UWyb.T
 
 
 class NeuralODE(nn.Module):

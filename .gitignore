@@ -4,6 +4,11 @@ pytorch/data
 pytorch/models
 *.lock
 
+# figures
+*.png 
+*.html
+*.pdf 
+
 # vs code settings file
 .vscode
 
