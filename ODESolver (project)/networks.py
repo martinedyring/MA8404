@@ -22,7 +22,7 @@ class ODEBlock(nn.Module):
         if self.variant == "standard":
             self.W = nn.Parameter(torch.randn(self.m, self.m))
             self.b = nn.Parameter(torch.randn(self.m))
-        elif self.variant == "UT":
+        elif self.variant == "general":
             self.U = nn.Parameter(torch.randn(self.p, self.m))
             self.W = nn.Parameter(torch.randn(self.p, self.m))
             self.b = nn.Parameter(torch.randn(self.p))
@@ -36,7 +36,7 @@ class ODEBlock(nn.Module):
             Wy = self.W @ y.T
             Wyb = Wy.T + self.b
             return Wyb
-        elif self.variant == "UT":
+        elif self.variant == "general":
             Wy = self.W @ y.T
             Wyb = Wy.T + self.b
             UWyb = self.U.T @ self.sigma(Wyb.T)
@@ -78,9 +78,19 @@ class NeuralODE(nn.Module):
             in_features=input_dim, out_features=hidden_dim, bias=False
         )
 
-        self.ode = ODEBlock(
+        ## Separate ODE block for each call
+        self.ode_layers = [
+            ODEBlock(
+                variant=variant, sigma=self.sigma, m=hidden_dim, p=hidden_internal_dim
+            )
+            for _ in range(self.num_hidden_layers)
+        ]  # y'
+
+        ## Common ODE block for each call
+        # Not in use
+        self.ode_layer = ODEBlock(
             variant=variant, sigma=self.sigma, m=hidden_dim, p=hidden_internal_dim
-        )  # y'
+        )
 
         self.classifier = nn.Linear(in_features=hidden_dim, out_features=output_dim)
 
@@ -103,14 +113,14 @@ class NeuralODE(nn.Module):
         # ODE solver
         for t in range(self.num_hidden_layers):  # how many time steps
             if self.method == "neural":
-                x = self.ode(x)
+                x = self.ode_layers[t](x)
             elif self.method == "euler":
-                x = x + self.h * self.ode(x)
+                x = x + self.h * self.ode_layers[t](x)
             elif self.method == "rk4":
-                k1 = self.ode(x)
-                k2 = self.ode(x + self.h * k1 / 2.0)
-                k3 = self.ode(x + self.h * k2 / 2.0)
-                k4 = self.ode(x + self.h * k3)
+                k1 = self.ode_layers[t](x)
+                k2 = self.ode_layers[t](x + self.h * k1 / 2.0)
+                k3 = self.ode_layers[t](x + self.h * k2 / 2.0)
+                k4 = self.ode_layers[t](x + self.h * k3)
 
                 x = x + self.h * (k1 + 2.0 * k2 + 2.0 * k3 + k4) / 6.0
 

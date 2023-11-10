@@ -1,9 +1,65 @@
-# Global parameters
+import utilities as utilities
 
+# Global parameters
 
 # Model Architecture:
 
 # ------ Shallow Model Architectures -------- #
+# (Shallow) Standard ODE
+shallow_standard_kwargs = {
+    "name": "Shallow Standard ODE",
+    "hidden_dim": 25,  # m_s
+    "hidden_internal_dim": None,  # p_s
+    "num_hidden_layers": 3,  # l
+    "variant": "standard",
+}
+
+# (Shallow) General quadratic ODE
+shallow_general_quad_kwargs = {
+    "name": "Shallow General ODE with m=p",
+    "hidden_dim": 18,  # m_u
+    "hidden_internal_dim": 18,  # p_u
+    "num_hidden_layers": 3,  # l
+    "variant": "general",
+}
+
+# (Shallow) General rectangular ODE
+shallow_general_rec_kwargs = {
+    "name": "Shallow General ODE with m≠p",
+    "hidden_dim": 10,  # m_u
+    "hidden_internal_dim": 31,  # p_u
+    "num_hidden_layers": 3,  # l
+    "variant": "general",
+}
+
+# (Deep) Standard ODE
+deep_standard_kwargs = {
+    "name": "Deep Standard ODE",
+    "hidden_dim": 11,  # m_s
+    "hidden_internal_dim": None,  # p_s
+    "num_hidden_layers": 15,  # l
+    "variant": "standard",
+}
+
+# (Deep) General quadratic ODE
+deep_general_quad_kwargs = {
+    "name": "Deep General ODE with m=p",
+    "hidden_dim": 8,  # m_u
+    "hidden_internal_dim": 8,  # p_u
+    "num_hidden_layers": 15,  # l
+    "variant": "general",
+}
+
+# (Deep) General rectangular ODE
+deep_general_rec_kwargs = {
+    "name": "Deep General ODE with m≠p",
+    "hidden_dim": 10,  # m_u
+    "hidden_internal_dim": 6,  # p_u
+    "num_hidden_layers": 15,  # l
+    "variant": "general",
+}
+
+"""
 # (Shallow) Euler standard
 shallow_kwargs_1 = {
     "name": "Shallow Euler Standard ODE",
@@ -125,23 +181,20 @@ deep_kwargs_4_2 = {
     "method": "rk4",
     "variant": "UT",
 }
+"""
 
-shallow_kwargs_dict = {
-    "Shallow Euler Standard": shallow_kwargs_1,
-    "Shallow Euler UT m=p": shallow_kwargs_2_1,
-    "Shallow Euler UT m≠p": shallow_kwargs_2_2,
-    "Shallow RK4 Standard": shallow_kwargs_3,
-    "Shallow RK4 UT m=p": shallow_kwargs_4_1,
-    "Shallow RK4 UT m≠p": shallow_kwargs_4_2,
+ode_kwargs_dict = {
+    "Shallow Standard ODE": shallow_standard_kwargs,
+    "Shallow General Quadratic ODE": shallow_general_quad_kwargs,
+    "Shallow General Rectangular ODE": shallow_general_rec_kwargs,
+    "Deep Standard ODE": deep_standard_kwargs,
+    "Deep General Quadratic ODE": deep_general_quad_kwargs,
+    "Deep General Rectangular ODE": deep_general_rec_kwargs,
 }
-
-deep_kwargs_dict = {
-    "Deep Euler Standard": deep_kwargs_1,
-    "Deep Euler UT m=p": deep_kwargs_2_1,
-    "Deep Euler UT m≠p": deep_kwargs_2_2,
-    "Deep RK4 Standard": deep_kwargs_3,
-    "Deep RK4 UT m=p": deep_kwargs_4_1,
-    "Deep RK4 UT m≠p": deep_kwargs_4_2,
+solver_method_kwargs_dict = {
+    "Simple NN": {"method": "neural"},
+    "Forward Euler": {"method": "euler"},
+    "Runge-Kutta 4": {"method": "rk4"},
 }
 
 # num_parameters_to_learn = write to func
@@ -154,4 +207,25 @@ color_label_dict = {0: "blue", 1: "red"}
 
 # Dataset
 n_points = 2000  # Make 1000 samples
-dataset_types = ["spiral", "circle"]  # Choose between "spiral" and "circle"
+dataset_kwargs_dict = {  # Choose between "spiral" and "circle"
+    "Spiral": {
+        "dataset_name": "Spiral dataset",
+        "get_data_function": utilities.generate_spiral_data,
+        "color_label_dict": color_label_dict,
+        "n_points": n_points,
+        "noise": 0.8,
+        "degree": 540,
+        "input_dim": 2,
+        "output_dim": 1,
+    },
+    "Circle": {
+        "dataset_name": "Circle dataset",
+        "get_data_function": utilities.generate_circle_data,
+        "color_label_dict": color_label_dict,
+        "n_points": n_points,
+        "noise": 0.1,
+        "factor": 0.8,
+        "input_dim": 2,
+        "output_dim": 1,
+    },
+}

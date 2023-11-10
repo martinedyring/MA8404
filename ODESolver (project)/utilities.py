@@ -22,9 +22,6 @@ from sklearn.metrics import confusion_matrix
 import seaborn as sns
 from plotly.subplots import make_subplots
 
-# global variables
-import params as params
-
 
 def train_model(
     model,
@@ -291,7 +288,12 @@ def get_dataloader_from_numpy_dataset(
     )
 
 
-def generate_spiral_data(n_points, noise, degree):
+def generate_spiral_data(**kwargs):
+    # Unpack kwargs
+    n_points = kwargs.get("n_points", None)
+    noise = kwargs.get("noise", None)
+    degree = kwargs.get("degree", None)
+
     np.random.seed(42)
     n = np.sqrt(np.random.rand(n_points, 1)) * degree * (2 * np.pi) / 360
     d1x = -np.cos(n) * n + np.random.randn(n_points, 1) * noise
@@ -302,7 +304,12 @@ def generate_spiral_data(n_points, noise, degree):
     )
 
 
-def generate_circle_data(n_points, noise, factor):
+def generate_circle_data(**kwargs):
+    # Unpack kwargs
+    n_points = kwargs.get("n_points", None)
+    noise = kwargs.get("noise", None)
+    factor = kwargs.get("factor", None)
+
     # Create circles
     X, y = make_circles(
         n_samples=n_points,  # Make a large circle containing a smaller circle in 2d
@@ -611,8 +618,8 @@ def run_model(activation_functions, **kwargs):
     y_train = kwargs.get("y_train", None)
     X_test = kwargs.get("X_test", None)
     y_test = kwargs.get("y_test", None)
-    n_epochs = kwargs.get("n_epochs", params.n_epochs)
-    color_label_dict = kwargs.get("color_label_dict", params.color_label_dict)
+    n_epochs = kwargs.get("n_epochs", None)
+    color_label_dict = kwargs.get("color_label_dict", None)
     fig_save = kwargs.get("fig_save", False)
     fig_show = kwargs.get("fig_show", False)
     fig_fname = kwargs.get("fig_fname", "run_model.png")
