@@ -2,9 +2,38 @@ import utilities as utilities
 
 # Global parameters
 
-# Model Architecture:
+# Epochs
+n_epochs = 50
 
-# ------ Shallow Model Architectures -------- #
+# Plotting
+color_label_dict = {0: "blue", 1: "red"}
+
+# Dataset
+n_points = 2000  # Make 1000 samples
+dataset_kwargs_dict = {  # Choose between "spiral" and "circle"
+    "Spiral": {
+        "dataset_name": "Spiral dataset",
+        "get_data_function": utilities.generate_spiral_data,
+        "color_label_dict": color_label_dict,
+        "n_points": n_points,
+        "noise": 0.8,
+        "degree": 540,
+        "input_dim": 2,
+        "output_dim": 1,
+    },
+    "Circle": {
+        "dataset_name": "Circle dataset",
+        "get_data_function": utilities.generate_circle_data,
+        "color_label_dict": color_label_dict,
+        "n_points": n_points,
+        "noise": 0.1,
+        "factor": 0.8,
+        "input_dim": 2,
+        "output_dim": 1,
+    },
+}
+
+# Model Architecture:
 # (Shallow) Standard ODE
 shallow_standard_kwargs = {
     "name": "Shallow Standard ODE",
@@ -58,6 +87,25 @@ deep_general_rec_kwargs = {
     "num_hidden_layers": 15,  # l
     "variant": "general",
 }
+
+ode_kwargs_dict = {
+    "Shallow Standard ODE": shallow_standard_kwargs,
+    "Shallow General Quadratic ODE": shallow_general_quad_kwargs,
+    "Shallow General Rectangular ODE": shallow_general_rec_kwargs,
+    "Deep Standard ODE": deep_standard_kwargs,
+    "Deep General Quadratic ODE": deep_general_quad_kwargs,
+    "Deep General Rectangular ODE": deep_general_rec_kwargs,
+}
+solver_method_kwargs_dict = {
+    "Simple NN": {"method": "neural"},
+    "Forward Euler": {"method": "euler"},
+    "Runge-Kutta 4": {"method": "rk4"},
+}
+
+
+# ----------------------------------------------------------------
+# OLD
+
 
 """
 # (Shallow) Euler standard
@@ -182,50 +230,3 @@ deep_kwargs_4_2 = {
     "variant": "UT",
 }
 """
-
-ode_kwargs_dict = {
-    "Shallow Standard ODE": shallow_standard_kwargs,
-    "Shallow General Quadratic ODE": shallow_general_quad_kwargs,
-    "Shallow General Rectangular ODE": shallow_general_rec_kwargs,
-    "Deep Standard ODE": deep_standard_kwargs,
-    "Deep General Quadratic ODE": deep_general_quad_kwargs,
-    "Deep General Rectangular ODE": deep_general_rec_kwargs,
-}
-solver_method_kwargs_dict = {
-    "Simple NN": {"method": "neural"},
-    "Forward Euler": {"method": "euler"},
-    "Runge-Kutta 4": {"method": "rk4"},
-}
-
-# num_parameters_to_learn = write to func
-
-# Epochs
-n_epochs = 50
-
-# Plotting
-color_label_dict = {0: "blue", 1: "red"}
-
-# Dataset
-n_points = 2000  # Make 1000 samples
-dataset_kwargs_dict = {  # Choose between "spiral" and "circle"
-    "Spiral": {
-        "dataset_name": "Spiral dataset",
-        "get_data_function": utilities.generate_spiral_data,
-        "color_label_dict": color_label_dict,
-        "n_points": n_points,
-        "noise": 0.8,
-        "degree": 540,
-        "input_dim": 2,
-        "output_dim": 1,
-    },
-    "Circle": {
-        "dataset_name": "Circle dataset",
-        "get_data_function": utilities.generate_circle_data,
-        "color_label_dict": color_label_dict,
-        "n_points": n_points,
-        "noise": 0.1,
-        "factor": 0.8,
-        "input_dim": 2,
-        "output_dim": 1,
-    },
-}

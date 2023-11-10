@@ -78,18 +78,14 @@ class NeuralODE(nn.Module):
             in_features=input_dim, out_features=hidden_dim, bias=False
         )
 
-        ## Separate ODE block for each call
-        self.ode_layers = [
-            ODEBlock(
-                variant=variant, sigma=self.sigma, m=hidden_dim, p=hidden_internal_dim
-            )
-            for _ in range(self.num_hidden_layers)
-        ]  # y'
-
-        ## Common ODE block for each call
-        # Not in use
-        self.ode_layer = ODEBlock(
-            variant=variant, sigma=self.sigma, m=hidden_dim, p=hidden_internal_dim
+        # y' : Separate ODE block for each call
+        self.ode_layers = nn.ModuleList(
+            [
+                ODEBlock(
+                    variant=variant, sigma=self.sigma, m=hidden_dim, p=hidden_internal_dim
+                )
+                for _ in range(self.num_hidden_layers)
+            ]
         )
 
         self.classifier = nn.Linear(in_features=hidden_dim, out_features=output_dim)
