@@ -3,7 +3,7 @@ import utilities as utilities
 # Global parameters
 
 # Epochs
-n_epochs = 50
+n_epochs = 200
 
 # Plotting
 color_label_dict = {0: "blue", 1: "red"}

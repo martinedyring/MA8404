@@ -6,8 +6,9 @@ pytorch/models
 
 # figures
 *.png 
-*.html
+# *.html
 *.pdf 
+*.pickle
 
 # vs code settings file
 .vscode

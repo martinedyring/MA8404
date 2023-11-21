@@ -325,6 +325,7 @@ def plot_transformation_3d(
     color_transformed_reduced,
     static=False,
     interactive=False,
+    num_col=3,
     fig_show=False,
     fig_size=(15, 5),
     fig_save=False,
@@ -336,8 +337,6 @@ def plot_transformation_3d(
             f'At least one of the following key word argument *has* to be True: "static", "interactive"'
         )
     # Plot
-    num_col = 3
-
     if static:
         # Initialize figure with 3D subplots (Matplotlib)
         plt_fig, axs = plt.subplots(
@@ -422,6 +421,7 @@ def plot_transformation_2d(
     color_transformed_reduced,
     show_decision_boundary=False,
     model=None,
+    num_col=3,
     fig_show=False,
     fig_size=(15, 5),
     fig_save=False,
@@ -439,8 +439,6 @@ def plot_transformation_2d(
     pca = PCA(n_components=2)
     # ex.: pca_result = pca.fit_transform(x_transformed_array[0, :, :, 0])
     # pca_result.shape : # num samples in each batch - # dimension (2)
-
-    num_col = 3
 
     fig, axs = plt.subplots(1, num_col, figsize=fig_size)
 

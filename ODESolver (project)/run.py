@@ -1,12 +1,11 @@
 # Import useful packages and pre-defined helper functions
+import os
 import torch
 import torch.nn as nn
-import os
 
 import utilities as utilities
 import params as params
 import networks as networks
-
 
 # Model Activation Functions
 activation_functions = [
@@ -30,24 +29,27 @@ out_folder = os.path.join(file_location, "figures")
 os.makedirs(out_folder, exist_ok=True)
 
 # Set parameters
-for dataset_type in params.dataset_types:
+for dataset_type, dataset_kwargs in params.dataset_kwargs_dict.items():
     out_folder_data = os.path.join(out_folder, dataset_type)
     os.makedirs(out_folder_data, exist_ok=True)
 
-    # Load and prepare dataset
     # Load dataset (X, y)
-    if dataset_type == "spiral":
-        # Sprial data
-        X, y = utilities.generate_spiral_data(params.n_points, noise=0.8, degree=540)
+    X, y = dataset_kwargs["get_data_function"](**dataset_kwargs)
 
-    elif dataset_type == "circle":
-        # Circle data
-        X, y = utilities.generate_circle_data(params.n_points, noise=0.1, factor=0.8)
-
-    else:
-        raise ValueError(
-            f"Dataset type {dataset_type} is not defined. Please try another type!"
-        )
+    # Load to torch tensor
+    # Train test split
+    (
+        train_dataloader,
+        test_dataloader,
+        train_data,
+        test_data,
+        X_train,
+        y_train,
+        X_test,
+        y_test,
+    ) = utilities.get_dataloader_from_numpy_dataset(
+        X, y, color_label_dict=dataset_kwargs["color_label_dict"], fig_show=False
+    )
 
     # Load to torch tensor
     # Train test split
@@ -75,15 +77,17 @@ for dataset_type in params.dataset_types:
     else:
         output_dim = y.shape[-1]
 
-    for models_kwargs_dict in [params.shallow_kwargs_dict, params.deep_kwargs_dict]:
-        for name, model_kwargs in models_kwargs_dict.items():
+    for ode_varaint, ode_variant_kwargs in params.ode_kwargs_dict.items():
+        for (
+            solver_method,
+            solver_method_kwargs,
+        ) in params.solver_method_kwargs_dict.items():
             # Training
             setup_kwargs = {
                 "ModelODE": networks.NeuralODE,
                 "model_lossfn": model_lossfn,
                 "model_optimizer": model_optimizer,
-                "input_dim": input_dim,
-                "output_dim": output_dim,
+                "n_epochs": params.n_epochs,
             }
 
             data_kwargs = {
@@ -99,15 +103,16 @@ for dataset_type in params.dataset_types:
                 # "fig_show": True,
                 "fig_save": True,
                 "fig_fname": os.path.join(
-                    out_folder_data,
-                    f"{model_kwargs['name']}_{dataset_type}_all.png",
+                    out_folder_data, f"{ode_varaint}_{solver_method}_{dataset_type}.png"
                 ),
             }
             model_object_dict = utilities.run_model(
                 activation_functions=activation_functions,
-                **model_kwargs,
+                **ode_variant_kwargs,
+                **solver_method_kwargs,
                 **setup_kwargs,
                 **data_kwargs,
+                **dataset_kwargs,
                 **plotting_kwargs,
             )
 
@@ -128,7 +133,7 @@ for dataset_type in params.dataset_types:
                     fig_save=True,
                     fig_fname=os.path.join(
                         out_folder_data_act,
-                        f"{model_kwargs['name']}_{dataset_type}_{act_name}_3d.png",
+                        f"{ode_varaint}_{solver_method}_{dataset_type}_{act_name}_3d.png",
                     ),
                 )
 
@@ -138,10 +143,13 @@ for dataset_type in params.dataset_types:
                     color_transformed_reduced=plot_model.color_transformed_reduced,
                     show_decision_boundary=True,
                     model=plot_model,
+                    # FIXME: more columns for multiple time steps
+                    # num_col=3, 6,
+                    num_col=3 if ode_variant_kwargs["num_hidden_layers"] < 7 else 7,
                     fig_save=True,
                     fig_fname=os.path.join(
                         out_folder_data_act,
-                        f"{model_kwargs['name']}_{dataset_type}_{act_name}_2d.png",
+                        f"{ode_varaint}_{solver_method}_{dataset_type}_{act_name}_2d.png",
                     ),
                 )
 
@@ -155,6 +163,6 @@ for dataset_type in params.dataset_types:
                     fig_save=True,
                     fig_fname=os.path.join(
                         out_folder_data_act,
-                        f"{model_kwargs['name']}_{dataset_type}_{act_name}_metrix.png",
+                        f"{ode_varaint}_{solver_method}_{dataset_type}_{act_name}_metrix.png",
                     ),
                 )
