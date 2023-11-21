@@ -2,6 +2,7 @@
 import os
 import torch
 import torch.nn as nn
+import dill
 
 import utilities as utilities
 import params as params
@@ -26,7 +27,9 @@ model_lossfn = nn.BCELoss
 
 file_location = os.path.dirname(__file__)
 out_folder = os.path.join(file_location, "figures")
+result_folder = os.path.join(file_location, "result")
 os.makedirs(out_folder, exist_ok=True)
+os.makedirs(result_folder, exist_ok=True)
 
 # Set parameters
 for dataset_type, dataset_kwargs in params.dataset_kwargs_dict.items():
@@ -123,6 +126,18 @@ for dataset_type, dataset_kwargs in params.dataset_kwargs_dict.items():
 
                 out_folder_data_act = os.path.join(out_folder_data, act_name)
                 os.makedirs(out_folder_data_act, exist_ok=True)
+
+                # Save the file
+                dill.dump(
+                    plot_model,
+                    file=open(
+                        os.path.join(
+                            result_folder,
+                            f"{ode_varaint}_{solver_method}_{dataset_type}_{act_name}_class.pickle",
+                        ),
+                        "wb",
+                    ),
+                )
 
                 # 3D plot for transformation with time stepping
                 utilities.plot_transformation_3d(

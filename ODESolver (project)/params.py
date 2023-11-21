@@ -97,7 +97,7 @@ ode_kwargs_dict = {
     "Deep General Rectangular ODE": deep_general_rec_kwargs,
 }
 solver_method_kwargs_dict = {
-    "Simple NN": {"method": "neural"},
+    # "Simple NN": {"method": "neural"},
     "Forward Euler": {"method": "euler"},
     "Runge-Kutta 4": {"method": "rk4"},
 }

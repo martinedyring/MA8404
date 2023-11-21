@@ -6,7 +6,7 @@ pytorch/models
 
 # figures
 *.png 
-# *.html
+*.html
 *.pdf 
 *.pickle
 
